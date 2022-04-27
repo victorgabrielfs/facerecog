@@ -1,12 +1,23 @@
-import os
-from flask import Flask, request, jsonify
-import db.init_db
+from app import app
+from flask import jsonify, request
+import psycopg2
 
-app = Flask(__name__)
+def getConnection():
+    conn = psycopg2.connect(host='ec2-3-230-122-20.compute-1.amazonaws.com',
+                            database='d16l4f8fojv0d3',
+                            user='dgsitkfgyzkuev',
+                            password='5bab5efdefe1923873c82735d8dcc559c38c4fde5d6b4d6666cc0b920754079b')
+    return conn
+
+
+
+@app.route('/')
+def helloworld():
+    return 'HelloWorld'
 
 @app.route('/list-missing-people', methods=['GET'])
 def consultar_pessoas():
-    conn = db.init_db.getConnection()
+    conn = getConnection()
     cur = conn.cursor()
     cur.execute('SELECT * FROM tb_pessoa_desaparecida;')
     missing_people = cur.fetchall()
@@ -18,7 +29,7 @@ def consultar_pessoas():
 def insert_missing_person(response):
     request_data = request.get_json()
 
-    conn = db.init_db.getConnection()
+    conn = getConnection()
     cur = conn.cursor()
     cur.execute(f"INSERT INTO tb_pessoa_desaparecida "
                 f"(nome, data_nascimento, local_desaparecimento, detalhes_desaparecimento) "
@@ -37,7 +48,7 @@ def insert_missing_person(response):
 def delete_missing_person():
     request_data = request.get_json()
 
-    conn = db.init_db.getConnection()
+    conn = getConnection()
     cur = conn.cursor()
     cur.execute(f'DELETE FROM tb_pessoa_desaparecida WHERE id_p_desaparecida = {request_data["person_id"]};')
     conn.commit()
@@ -50,7 +61,7 @@ def delete_missing_person():
 def alter_missing_person(res):
     request_data = request.get_json()
 
-    conn = db.init_db.getConnection()
+    conn = getConnection()
     cur = conn.cursor()
     cur.execute(f"UPDATE tb_pessoa_desaparecida "
                 f"SET {request_data['column']} = '{request_data['value']}' "
@@ -60,7 +71,3 @@ def alter_missing_person(res):
     conn.close()
 
     return "Done"
-
-
-port = int(os.environ.get("PORT", 5000)) 
-app.run(debug=False, host='0.0.0.0', port=port)
