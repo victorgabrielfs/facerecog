@@ -1,8 +1,8 @@
 from app import app
-from flask import jsonify, request
-import psycopg2
+# from flask import jsonify, request
+# import psycopg2
 
-def getConnection():
+'''def getConnection():
     conn = psycopg2.connect(host='ec2-3-230-122-20.compute-1.amazonaws.com',
                             database='d16l4f8fojv0d3',
                             user='dgsitkfgyzkuev',
@@ -10,11 +10,13 @@ def getConnection():
     return conn
 
 
-
+'''
 @app.route('/')
 def helloworld():
     return 'HelloWorld'
 
+
+'''
 @app.route('/list-missing-people', methods=['GET'])
 def consultar_pessoas():
     conn = getConnection()
@@ -70,4 +72,4 @@ def alter_missing_person(res):
     cur.close()
     conn.close()
 
-    return "Done"
+    return "Done" '''
