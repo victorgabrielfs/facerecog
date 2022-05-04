@@ -1,23 +1,23 @@
 from app import app
-# from flask import jsonify, request
-# import psycopg2
+from flask import render_template
+import psycopg2
 
 '''def getConnection():
     conn = psycopg2.connect(host='ec2-3-230-122-20.compute-1.amazonaws.com',
                             database='d16l4f8fojv0d3',
                             user='dgsitkfgyzkuev',
                             password='5bab5efdefe1923873c82735d8dcc559c38c4fde5d6b4d6666cc0b920754079b')
-    return conn
+    return conn'''
 
 
-'''
-@app.route('/')
-def helloworld():
-    return 'HelloWorld'
+@app.route('/<user>')
+@app.route('/', defaults={"user": None})
+def helloworld(user):
+    return render_template('index.html',user=user)
 
 
-'''
-@app.route('/list-missing-people', methods=['GET'])
+
+'''@app.route('/list-missing-people', methods=['GET'])
 def consultar_pessoas():
     conn = getConnection()
     cur = conn.cursor()
@@ -72,4 +72,5 @@ def alter_missing_person(res):
     cur.close()
     conn.close()
 
-    return "Done" '''
+    return "Done"
+    '''
