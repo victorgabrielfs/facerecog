@@ -4,3 +4,5 @@ SQLALCHEMY_DATABASE_URI = "postgresql://dgsitkfgyzkuev:5bab5efdefe1923873c82735d
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 DEBUG = True
+
+SECRET_KEY = "senha_segura"

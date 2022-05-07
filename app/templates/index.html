@@ -1,16 +1,20 @@
 <html>
-
 <head>
-    <title>bixona</title>
+    <title>FaceRecog</title>
     <link rel="stylesheet" href="{{ url_for('static', filename="css/bootstrap.min.css")}}">
 </head>
 <body>
-    {% if user%}
-    <p>bem vindo, {{user}}</p>
-    {% else %}
-    <p>oi</p>
-    {% endif %}
+    <h1>
+        Facerecog
+    </h1>
 
-    <script src=""{{ url_for('s
+    {% block content %}
+    {% endblock %}
+
+<footer>
+    <p>&copy; 2022 FaceRecog, Inc.</p>
+</footer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename="js/bootstrap.min.js")}}"></script>
 </body>
 </html>
