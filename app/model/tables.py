@@ -47,7 +47,7 @@ class MissingPeople(db.Model):
 class Images(db.Model):
     __tablename__ = "images"
     id = db.Column(db.Integer, primary_key=True)
-    picture = db.Column(db.LargeBinary, unique=True, nullable=False)
+    picture = db.Column(db.LargeBinary, unique=False, nullable=False)
     filename = db.Column(db.String(25), unique=False, nullable=False)
     mimetype = db.Column(db.String(15), unique=False, nullable=False)
     isUserProfile = db.Column(db.Boolean, nullable=False)
