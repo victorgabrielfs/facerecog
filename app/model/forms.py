@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField
-from wtforms.validators import DataRequired
+from wtforms import StringField, PasswordField, BooleanField, EmailField
+from wtforms.validators import DataRequired, Email
 
 
 class LoginForm(FlaskForm):
@@ -12,7 +12,7 @@ class LoginForm(FlaskForm):
 
 class SignUpForm(FlaskForm):
     name = StringField('name', validators=[DataRequired()])
-    email = StringField('email', validators=[DataRequired()])
+    email = EmailField('email', validators=[DataRequired(), Email()])
     password = PasswordField('password', validators=[DataRequired()])
     photo = FileField('image', validators=[
         FileAllowed(['jpg', 'png'], 'Images only!')

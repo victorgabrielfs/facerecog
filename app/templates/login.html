@@ -1,6 +1,14 @@
 {% extends 'index.html' %}
 
 {% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
 <div class="col-md-4 col-md-offset-4">
     <h2>Login</h2>
     <form action="" method="post">
@@ -17,6 +25,11 @@
             <label>
                 {{form.remember_me}} Remember me
             </label>
+        </div>
+        <div>
+            <a href="{{url_for('signup')}}">
+                Register
+            </a>
         </div>
         <button type="submit" class="btn btn-default">Submit</button>
     </form>
