@@ -13,6 +13,10 @@ class VideoCamera(object):
     def get_frame(self):
         image = self.stream.read()
 
+        detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        face = detector.detectMultiScale(image, 1.1, 7)
+        for (x, y, h, w) in face:
+            cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0), 2)
         ret, jpeg = cv2.imencode('.jpg', image)
         data = []
         data.append(jpeg.tobytes())
