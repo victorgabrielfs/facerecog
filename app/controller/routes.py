@@ -1,5 +1,7 @@
 from app import app, db
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, Response, request, jsonify
+
+from app.controller.recog.recog_utils import gen, VideoCamera
 from app.model.forms import LoginForm, SignUpForm
 from app.model.tables import User, bcrypt, Images
 from flask_login import login_user, logout_user, login_required
@@ -77,4 +79,38 @@ def signup():
             return redirect(url_for('login'))
 
     return render_template('signup.html', form=form)
+
+
+@app.route('/signup-app', methods=['POST'])
+def signup_app():
+    users_like_yours = User.query.filter_by(request.get_json()["email"]).first()
+    if users_like_yours is not None:
+        return jsonify({
+            "error": 1,
+            "message": "Email is already in use"
+        })
+    else:
+        email = request.get_json()["email"]
+        hash_password = bcrypt.generate_password_hash(request.get_json()["password"].encode('utf8'))
+        name = request.get_json()["name"]
+        user = User(name=name, email=email,
+                    password_hash=hash_password.decode('utf8'))
+        db.session.add(user)
+        db.session.commit()
+
+
+@app.route('/login-app', methods=['POST'])
+def login_app():
+    user = User.query.filter_by().first(request.get_json()["email"])
+    if user and user.verify_password(request.get_json()["password"]):
+        login_user(user)
+        return jsonify({"login": "successful"})
+    else:
+        return jsonify({"error": 2, "message": "Check your credentials and try again"})
+
+
+@app.route('/video_feed')
+@login_required
+def video_feed():
+    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
