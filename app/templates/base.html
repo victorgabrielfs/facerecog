@@ -1,15 +1,31 @@
 <html>
 <head>
     <title>FaceRecog</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename="css/bootstrap.min.css")}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}">
+
 </head>
 <body>
-    <h1>
-        Facerecog
-    </h1>
+    <div id="title-container">
+        <a href="{{ url_for('home')}}">
+            <h1 id="title">
+                Facerecog
+            </h1>
+        </a>       
+    </div>    
 
-    {% block content %}
-    {% endblock %}
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
 
 <footer>
     <p>&copy; 2022 FaceRecog, Inc.</p>

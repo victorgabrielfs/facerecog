@@ -1,6 +1,6 @@
 import cv2
 from imutils.video import WebcamVideoStream
-
+from app.model.tables import MissingPeople
 
 class VideoCamera(object):
 
