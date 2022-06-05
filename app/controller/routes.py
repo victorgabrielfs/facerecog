@@ -1,17 +1,17 @@
 from app import app, db
-from flask import render_template, redirect, url_for, flash, Response, request, jsonify
+from flask import render_template, redirect, url_for, flash, Response, request
 
-from app.controller.recog.recog_utils import gen, VideoCamera
+from app.controller.recog.recog_utils import gen
 from app.model.forms import LoginForm, SignUpForm
 from app.model.tables import User, bcrypt, Images, MissingPeople
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from app.controller.recog.get_missing_people import get_missing_people
 
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    missing_people = MissingPeople.query.all()
 
     return render_template('index.html')
 
@@ -83,8 +83,49 @@ def signup():
     return render_template('signup.html', form=form)
 
 
+@app.route('/insert_missing_person', methods=['POST'])
+@login_required
+def insert_missing_person():
+    name = request.form.get('name')
+    birthday = request.form.get('birthday')
+    birthplace = request.form.get('birthplace')
+    place_of_disappearance = request.form.get('place_of_disappearance')
+    disappearance_details = request.form.get('disappearance_details')
+    pic = request.files.get('pic')
+    filename = secure_filename(pic.filename)
+    mimetype = pic.mimetype
+    user = current_user
+    user_id = user.id
+    print(user_id)
+    image = Images(picture=pic.read(), isUserProfile=False, isMissingPersonProfile=True, filename=filename,
+                   mimetype=mimetype)
+
+    missing_person = MissingPeople(user_id=user_id,name=name,birthday=birthday, birthplace=birthplace,
+                                   place_of_disappearance=place_of_disappearance,
+                                   disappearance_details=disappearance_details, pics=[image])
+
+    db.session.add(missing_person)
+    db.session.add(image)
+    db.session.commit()
+    return "ok"
+
+
+@app.route('/login-app', methods=['POST'])
+def login_app():
+    email = request.json['email']
+    print(email)
+    user = User.query.filter_by(email=request.json['email']).first()
+
+    if user and user.verify_password(request.json['password']):
+        login_user(user)
+        return "Login successful"
+    else:
+        return "Check your credentials and try again"
+
+
 @app.route('/video_feed')
 @login_required
 def video_feed():
-    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+    get_missing_people()
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
