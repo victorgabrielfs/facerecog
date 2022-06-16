@@ -1,19 +1,27 @@
 from app import app, db
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, Response, request, send_file
+
+from app.controller.recog.recog_utils import gen
 from app.model.forms import LoginForm, SignUpForm
-from app.model.tables import User, bcrypt, Images
-from flask_login import login_user, logout_user, login_required
+from app.model.tables import User, bcrypt, Images, MissingPeople
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from app.controller.recog.get_missing_people import get_missing_people
+from PIL import Image
+import io
+
 
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
+    
     return render_template('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.username.data).first()
@@ -78,3 +86,86 @@ def signup():
 
     return render_template('signup.html', form=form)
 
+
+@app.route('/insert_missing_person', methods=['POST'])
+@login_required
+def insert_missing_person():
+    name = request.form.get('name')
+    birthday = request.form.get('birthday')
+    birthplace = request.form.get('birthplace')
+    place_of_disappearance = request.form.get('place_of_disappearance')
+    disappearance_details = request.form.get('disappearance_details')
+    pic = request.files.get('pic')
+    filename = secure_filename(pic.filename)
+    mimetype = pic.mimetype
+    user = current_user
+    user_id = user.id
+    print(user_id)
+    image = Images(picture=pic.read(), isUserProfile=False, isMissingPersonProfile=True, filename=filename,
+                   mimetype=mimetype)
+
+    missing_person = MissingPeople(user_id=user_id,name=name,birthday=birthday, birthplace=birthplace,
+                                   place_of_disappearance=place_of_disappearance,
+                                   disappearance_details=disappearance_details, pics=[image])
+
+    db.session.add(missing_person)
+    db.session.add(image)
+    db.session.commit()
+    return "ok"
+
+
+@app.route('/login-app', methods=['POST'])
+def login_app():
+    email = request.json['email']
+    print(email)
+    user = User.query.filter_by(email=request.json['email']).first()
+
+    if user and user.verify_password(request.json['password']):
+        login_user(user)
+        return "Login successful"
+    else:
+        return "Check your credentials and try again"
+
+
+@app.route('/video_feed')
+@login_required
+def video_feed():
+    get_missing_people()
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/user_image')
+@login_required
+def user_image():
+    pic = Image.open(io.BytesIO(current_user.profile_pic.picture))
+    img_io = io.BytesIO()
+    mimetype = current_user.profile_pic.mimetype.split('/')
+    pic.save(img_io, mimetype[1].upper(), quality=70)
+    img_io.seek(0)
+    return send_file(img_io, current_user.profile_pic.mimetype)
+
+@app.route('/missing_people')
+@login_required
+def missing_people():
+    missing_people = MissingPeople.query.all()
+    return render_template('missing_people.html', missing_people=missing_people)
+
+
+@app.route('/missing_person_images/<int:id>')
+@login_required
+def get_missing_person_images(id):
+    image = Images.query.filter_by(missing_person_id=id).first()
+    
+    pic = Image.open(io.BytesIO(image.picture))
+    img_io = io.BytesIO()
+    mimetype = current_user.profile_pic.mimetype.split('/')
+    pic.save(img_io, mimetype[1].upper(), quality=70)
+    img_io.seek(0)
+    return send_file(img_io, current_user.profile_pic.mimetype)
+
+
+@app.route('/missing_person/<int:id>')
+@login_required
+def get_missing_person(id):
+    missing_person = MissingPeople.query.filter_by(id=id).first()
+    return render_template("missing_person.html", missing_person=missing_person)
